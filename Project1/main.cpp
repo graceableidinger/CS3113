@@ -48,6 +48,7 @@ const int MAX_FRAME = 200;
 //Delta Time Transformation Variables
 const float DEGREES_PER_SEC = 0.1f;
 float delta_time = 1.0f,
+g_angle = 0.0f,
 g_prev_ticks = 0.0f,
 g_x_planet, g_y_planet, g_x_moons, g_y_moons, g_x_sun, g_y_sun, g_x_comet, g_y_comet = 0.0f,
 g_circle_speed = 0.0005f,
@@ -213,21 +214,20 @@ void update() {
     delta_time = ticks - g_prev_ticks;
     g_prev_ticks = ticks;
 
-    //float angle = g_circle_speed * ticks * delta_time;
-    float angle = g_circle_speed * ticks;
+    g_angle += g_circle_speed * delta_time;
 
     //Planet movement calculations
     float planet_orbit_radius = 3.0f;
-    g_x_planet = planet_orbit_radius *cos(angle);
-    g_y_planet = planet_orbit_radius *sin(angle);
+    g_x_planet = planet_orbit_radius *cos(g_angle);
+    g_y_planet = planet_orbit_radius *sin(g_angle);
     g_rotation_planet += (DEGREES_PER_SEC * delta_time);
 
     //Comet movement calculations
     float comet_offset = 4.0f;
     float comet_orbit_radius = 6.0f;
-    g_x_comet = comet_orbit_radius * cos(angle);
-    g_y_comet = comet_orbit_radius * sin(angle);
-    g_rotation_comet = angle/28;
+    g_x_comet = comet_orbit_radius * cos(g_angle);
+    g_y_comet = comet_orbit_radius * sin(g_angle);
+    g_rotation_comet = g_angle/28;
 
     //Planet movement
     g_planet_model_matrix = glm::mat4(1.0f);
