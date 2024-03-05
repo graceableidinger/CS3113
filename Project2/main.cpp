@@ -1,7 +1,7 @@
 /**
 * Author: Grace Ableidinger
-* Assignment: Simple 2D Scene
-* Date due: 2024-02-17, 11:59pm
+* Assignment: Pong Clone
+* Date due: 2024-03-02, 11:59pm
 * I pledge that I have completed this assignment without
 * collaborating with anyone else, in conformance with the
 * NYU School of Engineering Policies and Procedures on
