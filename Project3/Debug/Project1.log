@@ -1,0 +1,12 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Project1.vcxproj, Project2.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Entity.cpp
+C:\Users\ableg\GameProg\Project3\Entity.cpp(21,24): warning C4305: '-=': truncation from 'double' to 'float'
+C:\Users\ableg\GameProg\Project3\Entity.cpp(28,24): warning C4305: '-=': truncation from 'double' to 'float'
+C:\Users\ableg\GameProg\Project3\Entity.cpp(35,24): warning C4305: '-=': truncation from 'double' to 'float'
+  main.cpp
+C:\Users\ableg\GameProg\Project3\main.cpp(69,64): warning C4305: 'initializing': truncation from 'double' to 'const float'
+C:\Users\ableg\GameProg\Project3\main.cpp(69,69): warning C4305: 'initializing': truncation from 'double' to 'const float'
+C:\Users\ableg\GameProg\Project3\main.cpp(69,74): warning C4305: 'initializing': truncation from 'double' to 'const float'
+C:\Users\ableg\GameProg\Project3\main.cpp(69,84): warning C4305: 'initializing': truncation from 'double' to 'const float'
+  Generating Code...
+  Project1.vcxproj -> C:\Users\ableg\GameProg\Project3\Debug\Project3.exe
