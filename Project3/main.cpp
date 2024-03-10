@@ -6,9 +6,9 @@
 * collaborating with anyone else, in conformance with the
 * NYU School of Engineering Policies and Procedures on
 * Academic Misconduct.
-* 
-* 
-* 
+*
+*
+*
 **/
 
 #define GL_SILENCE_DEPRECATION
@@ -64,9 +64,9 @@ F_SHADER_PATH[] = "shaders/fragment_textured.glsl";
 
 //Declare Sprites 
 int safe_landings[] = { 1,2,3,6 };
-const char* SPRITES[NUM_OF_GROUND_OBJ+NUM_OF_OTHER_OBJ] = { "Sub.png", "Sand.png", "Kelp.png", "Plants.png", "Coral.png", "Oyster.png",  "Seaweed.png", "Tube.png", "Crab.png", "Failed.png", "Success.png", "No_Fuel.png"};
-const glm::vec3 STARTING_POS[NUM_OF_GROUND_OBJ+1] = { glm::vec3(-4.0f, 3.0f, 0.0f), glm::vec3(0.0f, -0.5f, 0.0f), glm::vec3(-4.0f, -1.2f, 0.0f), glm::vec3(-1.2f, -1.5f, 0.0f) ,  glm::vec3(-2.5f, -2.4f, 0.0f), glm::vec3(4.5f, -1.5f, 0.0f), glm::vec3(2.7f, -1.2f, 0.0f), glm::vec3(1.0f, -2.0f, 0.0f), glm::vec3(0.5f, -2.4f, 0.0f) };
-const float SCALES[NUM_OF_GROUND_OBJ+1] = {0.5, 5.0, 1.5, 1.5, 0.8, 0.7, 1.7, 1.0, 0.7};
+const char* SPRITES[NUM_OF_GROUND_OBJ + NUM_OF_OTHER_OBJ] = { "Sub.png", "Sand.png", "Kelp.png", "Plants.png", "Coral.png", "Oyster.png",  "Seaweed.png", "Tube.png", "Crab.png", "Failed.png", "Success.png", "No_Fuel.png" };
+const glm::vec3 STARTING_POS[NUM_OF_GROUND_OBJ + 1] = { glm::vec3(-4.0f, 3.0f, 0.0f), glm::vec3(0.0f, -0.5f, 0.0f), glm::vec3(-4.0f, -1.2f, 0.0f), glm::vec3(-1.2f, -1.5f, 0.0f) ,  glm::vec3(-2.5f, -2.4f, 0.0f), glm::vec3(4.5f, -1.5f, 0.0f), glm::vec3(2.7f, -1.2f, 0.0f), glm::vec3(1.0f, -2.0f, 0.0f), glm::vec3(0.5f, -2.4f, 0.0f) };
+const float SCALES[NUM_OF_GROUND_OBJ + 1] = { 0.5, 5.0, 1.5, 1.5, 0.8, 0.7, 1.7, 1.0, 0.7 };
 
 //Texture Variables
 const int NUMBER_OF_TEXTURES = 1;
@@ -101,7 +101,7 @@ GLuint load_texture(const char* filepath) {
         std::cout << "Unable to load image." << std::endl;
         assert(false);
     }
-    
+
     GLuint textureID;
     glGenTextures(NUMBER_OF_TEXTURES, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -140,8 +140,8 @@ void initialize() {
         g_state.ground[i]->set_model_matrix(glm::mat4(1.0f));
         g_state.ground[i]->set_position(STARTING_POS[i + 1]);
         g_state.ground[i]->set_model_matrix(glm::translate(g_state.ground[i]->get_model_matrix(), g_state.ground[i]->get_position()));
-        for(int j = 0; j < (sizeof(safe_landings) / sizeof(safe_landings[0])); j++){
-            if (safe_landings[j] == i+1) {
+        for (int j = 0; j < (sizeof(safe_landings) / sizeof(safe_landings[0])); j++) {
+            if (safe_landings[j] == i + 1) {
                 g_state.ground[i]->set_safety(true);
             }
         }
@@ -153,7 +153,7 @@ void initialize() {
 
     for (int i = 0; i < 3; i++) {
         g_state.UI[i] = new Entity();
-        g_state.UI[i]->set_texid(load_texture(SPRITES[i +1+NUM_OF_GROUND_OBJ]));
+        g_state.UI[i]->set_texid(load_texture(SPRITES[i + 1 + NUM_OF_GROUND_OBJ]));
         g_state.UI[i]->set_model_matrix(glm::mat4(1.0f));
     }
     g_state.UI[2]->set_position(glm::vec3(4.0, 3.0, 0.0));
@@ -174,7 +174,7 @@ void initialize() {
 
     g_program.SetViewMatrix(g_view_matrix);
     g_program.SetProjectionMatrix(g_projection_matrix);
-    
+
     glUseProgram(g_program.GetProgramID());
 
     glClearColor(BG_RED, BG_GREEN, BG_BLUE, BG_OPACITY);
@@ -188,9 +188,9 @@ void process_input() {
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
         case SDL_QUIT:
-            case SDL_WINDOWEVENT_CLOSE :
-                g_game_is_running = false;
-                break;
+        case SDL_WINDOWEVENT_CLOSE:
+            g_game_is_running = false;
+            break;
         }
     }
     g_state.fuel = g_state.player->process_input(ACC_OF_GRAVITY, g_state.fuel);
@@ -203,22 +203,22 @@ void detect_collision() {
             x_diff = fabs(g_state.player->get_position().x - g_state.ground[i]->get_position().x);
             y_diff = fabs(g_state.player->get_position().y - g_state.ground[i]->get_position().y);
 
-            x_dist = x_diff - (g_state.player->get_width() + g_state.ground[i]->get_width()) ;
-            y_dist = y_diff - (g_state.player->get_height() + g_state.ground[i]->get_height()) ;
+            x_dist = x_diff - (g_state.player->get_width() + g_state.ground[i]->get_width());
+            y_dist = y_diff - (g_state.player->get_height() + g_state.ground[i]->get_height());
 
             if (x_dist < 0 && y_dist < 0) {
                 g_state.lost = true;
             }
         }
         else if (g_state.ground[i]->is_ground()) {
-            if (g_state.player->get_position().y<-3) {
+            if (g_state.player->get_position().y < -3) {
                 g_state.won = true;
             }
         }
     }
 }
 
-void update(){
+void update() {
     if (!g_state.lost && !g_state.won) {
         // delta time
         float ticks = (float)SDL_GetTicks() / 1000;
@@ -254,7 +254,7 @@ void render() {
             g_state.UI[2]->render(&g_program, 1.0);
         }
         for (int i = 0; i < NUM_OF_GROUND_OBJ; i++) {
-            g_state.ground[i]->render(&g_program, SCALES[i+1]);
+            g_state.ground[i]->render(&g_program, SCALES[i + 1]);
         }
         g_state.player->render(&g_program, SCALES[0]);
     }

@@ -6,8 +6,8 @@
 
 Entity::Entity()
 {
-    m_position     = glm::vec3(0.0f);
-    m_velocity     = glm::vec3(0.0f);
+    m_position = glm::vec3(0.0f);
+    m_velocity = glm::vec3(0.0f);
     m_acceleration = glm::vec3(0.0f);
     safe_to_land = false;
     ground = false;
@@ -49,10 +49,11 @@ float Entity::process_input(float gravity, float fuel) {
 }
 
 
+
 void Entity::update(float delta_time)
 {
     //movement
-    if (right) {
+    if (right && m_position.x < 4.5) {
         m_acceleration.x += 0.5f;
     }
     else {
@@ -60,7 +61,7 @@ void Entity::update(float delta_time)
             m_acceleration.x -= 0.3f;
         }
     }
-    if (left) {
+    if (left && m_position.x > -4.5) {
         m_acceleration.x -= 0.05f;
     }
     else {
@@ -68,19 +69,17 @@ void Entity::update(float delta_time)
             m_acceleration.x += 0.3f;
         }
     }
-    if (up) {
-        m_acceleration.y += 0.5f;
+    if (up && m_position.y < 3.0) {
+        m_acceleration.y += (0.05f);
     }
     else {
-        if (m_acceleration.x > -0.0981) {
-            m_acceleration.x -= 0.0f;
-        }
+        m_acceleration.y = ACC_OF_GRAVITY;
     }
 
 
     m_velocity.x = m_movement.x * m_speed;
+    m_velocity.y += m_movement.y * m_speed;
 
-    
     //gravity
     m_velocity += m_acceleration * delta_time;
     m_position += m_velocity * delta_time;
