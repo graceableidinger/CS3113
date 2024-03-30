@@ -47,7 +47,7 @@ V Animation Code
 #include "stb_image.h"
 #include "map.h"
 
-// ––––– SETTINGS ––––– //
+// â€“â€“â€“â€“â€“ SETTINGS â€“â€“â€“â€“â€“ //
 
 // ___ Window Settings ___ //
 const int WINDOW_WIDTH = 640,
@@ -73,7 +73,7 @@ const int NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0,
 TEXTURE_BORDER = 0;
 
-// ––––– VARIABLES ––––– //
+// â€“â€“â€“â€“â€“ VARIABLES â€“â€“â€“â€“â€“ //
 
 // ___ Window and Shaders ___ //
 const char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
@@ -91,7 +91,7 @@ g_previous_ticks = 0.0f;
 glm::mat4 g_view_matrix, // pos of camera
 g_projection_matrix; // camera characteristics
 
-// ––––– GAME VARIABLES ––––– //
+// â€“â€“â€“â€“â€“ GAME VARIABLES â€“â€“â€“â€“â€“ //
 
 // ___ Sprite Info ___ //
 const char* SPRITES[NUM_OF_ENEMIES + 1] = { "Girl.png", "Zombie.png", "Zombie.png", "Ghost.png"};
@@ -111,7 +111,7 @@ unsigned int LEVEL_1_DATA[] =
 };
 
 
-// ––––– USER DEFINED ––––– //
+// â€“â€“â€“â€“â€“ USER DEFINED â€“â€“â€“â€“â€“ //
 // 
 // ___ Enums ___ //
 enum WinState { Win, Loss, In_Prog };
@@ -129,7 +129,7 @@ struct GameState
 
 
 
-// ––––– HELPER FUNCTIONS ––––– //
+// â€“â€“â€“â€“â€“ HELPER FUNCTIONS â€“â€“â€“â€“â€“ //
 GLuint load_texture(const char* filepath) {
     int width, height, num_of_components;
     unsigned char* image = stbi_load(filepath, &width, &height, &num_of_components, STBI_rgb_alpha);
@@ -156,28 +156,20 @@ GLuint load_texture(const char* filepath) {
 
 void draw_text(ShaderProgram* program, GLuint font_texture_id, std::string text, float screen_size, float spacing, glm::vec3 position)
 {
-    // Scale the size of the fontbank in the UV-plane
-    // We will use this for spacing and positioning
     float width = 1.0f / FONTBANK_SIZE;
     float height = 1.0f / FONTBANK_SIZE;
 
-    // Instead of having a single pair of arrays, we'll have a series of pairs—one for each character
-    // Don't forget to include <vector>!
     std::vector<float> vertices;
     std::vector<float> texture_coordinates;
 
-    // For every character...
     for (int i = 0; i < text.size(); i++) {
-        // 1. Get their index in the spritesheet, as well as their offset (i.e. their position
-        //    relative to the whole sentence)
         int spritesheet_index = (int)text[i];  // ascii value of character
         float offset = (screen_size + spacing) * i;
-
-        // 2. Using the spritesheet index, we can calculate our U- and V-coordinates
+        
+        //find right letter in fontbank
         float u_coordinate = (float)(spritesheet_index % FONTBANK_SIZE) / FONTBANK_SIZE;
         float v_coordinate = (float)(spritesheet_index / FONTBANK_SIZE) / FONTBANK_SIZE;
 
-        // 3. Inset the current pair in both vectors
         vertices.insert(vertices.end(), {
             offset + (-0.5f * screen_size), 0.5f * screen_size,
             offset + (-0.5f * screen_size), -0.5f * screen_size,
@@ -196,8 +188,7 @@ void draw_text(ShaderProgram* program, GLuint font_texture_id, std::string text,
             u_coordinate, v_coordinate + height,
             });
     }
-
-    // 4. And render all of them using the pairs
+    //rendering 
     glm::mat4 model_matrix = glm::mat4(1.0f);
     model_matrix = glm::translate(model_matrix, position);
 
@@ -230,7 +221,7 @@ void update_win_state() {
     }
 }
 
-// ––––– BASE FUNCTIONS ––––– //
+// â€“â€“â€“â€“â€“ BASE FUNCTIONS â€“â€“â€“â€“â€“ //
 void initialize() {
 
     SDL_Init(SDL_INIT_VIDEO);
