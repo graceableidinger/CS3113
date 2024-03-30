@@ -19,8 +19,8 @@ V Enemy 3 - lying in wait or flying in a circle
 V Player Kill
 V Player Movement
 V Player Jump
-- Assets
-- Animations - walking, idle, killing, enemy move 
+V Assets
+V Animations - walking, idle, killing, enemy move 
 V Floor
 V Collisions with floor
 V Animation Code
