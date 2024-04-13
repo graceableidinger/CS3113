@@ -2,7 +2,8 @@
 #include "Entity.h"
 
 #define ACC_OF_GRAVITY -9.8f
-#define WALL_POS 4.5
+#define WALL_POS 15
+#define VERT_BOUNDS 3.5
 
 
 Entity::Entity()
@@ -25,6 +26,7 @@ Entity::Entity()
     m_collide_below = false;
     m_collide_left = false;
     m_collide_right = false;
+    m_collide_top = false;
 
     // --- ANIMATION --- //
     cols = SPRITESHEET_DIMENSIONS;
@@ -47,7 +49,7 @@ bool Entity::detect_collision(Entity* other, float size) {
 
             x_dist = x_diff - (width + other[i].get_width());
             y_dist = y_diff - (height + other[i].get_height());
-            if (x_dist < 0 && y_dist < 0) {
+            if (x_dist < -0.5 && y_dist < -0.5) {
                 if (other[i].get_type() == Enemy) {
                     if (defended) {
                         other[i].set_defeated(true);
@@ -66,6 +68,51 @@ bool Entity::detect_collision(Entity* other, float size) {
     }
     return false;
 
+}
+
+void Entity::detect_collision(Map* map) {
+    glm::vec3 points[8] = { glm::vec3(m_position.x, m_position.y + (height / 2), m_position.z), glm::vec3(m_position.x - (width / 2), m_position.y + (height / 2), m_position.z),
+    glm::vec3(m_position.x + (width / 2), m_position.y + (height / 2), m_position.z), glm::vec3(m_position.x, m_position.y - (height / 2), m_position.z),
+    glm::vec3(m_position.x - (width / 2), m_position.y - (height / 2), m_position.z), glm::vec3(m_position.x + (width / 2), m_position.y - (height / 2), m_position.z),
+    glm::vec3(m_position.x - (width / 2), m_position.y, m_position.z), glm::vec3(m_position.x + (width / 2), m_position.y, m_position.z) };
+
+    float penetration_x = 0;
+    float penetration_y = 0;
+
+    for (int i = 0; i <= 8; i++) {
+        if (i < 3) {
+            if (map->is_solid(points[i], &penetration_x, &penetration_y) && m_velocity.y > 0) {
+                m_position.y -= penetration_y;
+                m_velocity.y = 0;
+                m_collide_top = true;
+            }
+        }
+        else if (i < 6) {
+            if (map->is_solid(points[i], &penetration_x, &penetration_y) && m_velocity.y < 0) {
+                m_position.y += penetration_y;
+                m_velocity.y = 0;
+                m_collide_below = true;
+            }
+        }
+        else if (i < 7) {
+            if (map->is_solid(points[i], &penetration_x, &penetration_y) && m_velocity.x < 0)
+            {
+                m_position.x += penetration_x;
+                m_velocity.x = 0;
+                m_collide_left = true;
+
+            }
+        }
+        else {
+            if (map->is_solid(points[i], &penetration_x, &penetration_y) && m_velocity.x > 0)
+            {
+                m_position.x -= penetration_x;
+                m_velocity.x = -m_velocity.x;
+
+                m_collide_right = true;
+            }
+        }
+    }
 }
 
 void Entity::gravity(float delta_time){
@@ -176,6 +223,7 @@ void Entity::process_input() {
         }
         if (key_state[SDL_SCANCODE_SPACE] && m_collide_below) {
             jumping = true;
+            m_collide_below = false;
         }
     }
 }
@@ -218,7 +266,7 @@ void Entity::draw_sprite_from_texture_atlas(ShaderProgram* program, GLuint textu
     glDisableVertexAttribArray(program->GetTexCoordAttribute());
 }
 
-void Entity::update(float delta_time, Entity* player, Entity* enemies, Entity* platforms)
+void Entity::update(float delta_time, Entity* player, Entity* enemies, Map* map)
 {
     animate(delta_time);
     // ––––– MOVEMENT ––––– //
@@ -233,7 +281,7 @@ void Entity::update(float delta_time, Entity* player, Entity* enemies, Entity* p
             m_movement.x = -5.0f;
         }
         gravity(delta_time);
-        m_collide_below = detect_collision(platforms, NUM_OF_PLATFORMS);
+        detect_collision(map);
         detect_collision(enemies, NUM_OF_ENEMIES);
 
         // ––––– JUMPING ––––– //
@@ -250,7 +298,9 @@ void Entity::update(float delta_time, Entity* player, Entity* enemies, Entity* p
         case Walk:
             idle = false;
             set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));
-            if (m_position.x < -WALL_POS || m_position.x>WALL_POS) {
+            if (m_collide_left || m_collide_right) {
+                if (m_collide_left) { m_collide_left = false; }
+                if (m_collide_right) { m_collide_right = false; }
                 speed *= -1;
                 switch (anim_direction) {
                 case Left:
@@ -261,13 +311,12 @@ void Entity::update(float delta_time, Entity* player, Entity* enemies, Entity* p
                     break;
                 }
             }
-            if (!detect_collision(platforms, NUM_OF_PLATFORMS)) {
-                gravity(delta_time);
-            }
+            gravity(delta_time);
+            detect_collision(map);
             break;
         case Fly:
             set_movement(glm::vec3(1.0f));
-            if (m_position.y < -WALL_POS + 1 || m_position.y > WALL_POS - 1 || detect_collision(platforms, NUM_OF_PLATFORMS)) {
+            if (m_position.y < -VERT_BOUNDS + 1 || m_position.y > VERT_BOUNDS - 1 ||m_collide_below) {
                 speed *= -1;
             }
             m_position.y += m_movement.y * speed * delta_time;
@@ -288,9 +337,8 @@ void Entity::update(float delta_time, Entity* player, Entity* enemies, Entity* p
             else {
                 idle = true;
             }
-            if (!detect_collision(platforms, NUM_OF_PLATFORMS)) {
-                gravity(delta_time);
-            }
+            gravity(delta_time);
+            detect_collision(map);
             break;
         }
         break;

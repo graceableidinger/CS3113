@@ -13,6 +13,7 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "ShaderProgram.h"
+#include "map.h"
 
 enum EntityType{ Player, Enemy, Platform };
 enum AIType{ Walk, Fly, Wait };
@@ -46,9 +47,10 @@ private:
 
     // --- COLLISIONS --- //
 
-    bool m_collide_below = false,
-        m_collide_left = false,
-        m_collide_right = false;
+    bool m_collide_below,
+        m_collide_left,
+        m_collide_right,
+        m_collide_top;
 
     float width, 
         height;
@@ -104,6 +106,7 @@ public:
     void gravity(float);
     void draw_object(ShaderProgram*);
     bool detect_collision(Entity*, float);
+    void detect_collision(Map* map);
     void adjust_overlap(Entity*);
     void animate(float);
     void draw_sprite_from_texture_atlas(ShaderProgram* program, GLuint texture_id, int index);
@@ -112,6 +115,6 @@ public:
 
     // ————— BASIC ————— //
     void process_input();
-    void update(float, Entity*, Entity*, Entity*);
+    void update(float, Entity*, Entity*, Map*);
     void render(ShaderProgram*, float);
 };

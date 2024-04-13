@@ -19,8 +19,8 @@ V Enemy 3 - lying in wait or flying in a circle
 V Player Kill
 V Player Movement
 V Player Jump
-V Assets
-V Animations - walking, idle, killing, enemy move 
+- Assets
+- Animations - walking, idle, killing, enemy move 
 V Floor
 V Collisions with floor
 V Animation Code
@@ -47,7 +47,7 @@ V Animation Code
 #include "stb_image.h"
 #include "map.h"
 
-// â€“â€“â€“â€“â€“ SETTINGS â€“â€“â€“â€“â€“ //
+// ––––– SETTINGS ––––– //
 
 // ___ Window Settings ___ //
 const int WINDOW_WIDTH = 640,
@@ -73,7 +73,7 @@ const int NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0,
 TEXTURE_BORDER = 0;
 
-// â€“â€“â€“â€“â€“ VARIABLES â€“â€“â€“â€“â€“ //
+// ––––– VARIABLES ––––– //
 
 // ___ Window and Shaders ___ //
 const char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
@@ -91,27 +91,27 @@ g_previous_ticks = 0.0f;
 glm::mat4 g_view_matrix, // pos of camera
 g_projection_matrix; // camera characteristics
 
-// â€“â€“â€“â€“â€“ GAME VARIABLES â€“â€“â€“â€“â€“ //
+// ––––– GAME VARIABLES ––––– //
 
 // ___ Sprite Info ___ //
 const char* SPRITES[NUM_OF_ENEMIES + 1] = { "Girl.png", "Zombie.png", "Zombie.png", "Ghost.png"};
-const char* PLATFORM = { "Floor.png" };
+const char* MAP = { "Floor.png" };
 const char* FONT = { "Font.png" };
-const glm::vec3 STARTING_POS[NUM_OF_ENEMIES + 1] = { glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(4.5f, 0.0f, 0.0f) , glm::vec3(-3.0, 2.0f, 0.0f), glm::vec3(3.0f, 0.0f, 0.0f)};
+const glm::vec3 STARTING_POS[NUM_OF_ENEMIES + 1] = { glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(4.5f, 0.0f, 0.0f) , glm::vec3(10.0, 2.0f, 0.0f), glm::vec3(3.0f, 0.0f, 0.0f)};
 const float SCALES[NUM_OF_ENEMIES + 1] = { 0.5f, 0.5f, 0.5f, 0.5f};
 
 // ___ Platform Design ___ //
 unsigned int LEVEL_1_DATA[] =
 {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
-    2, 2, 1, 1, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2
+    0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 };
 
 
-// â€“â€“â€“â€“â€“ USER DEFINED â€“â€“â€“â€“â€“ //
+// ––––– USER DEFINED ––––– //
 // 
 // ___ Enums ___ //
 enum WinState { Win, Loss, In_Prog };
@@ -120,7 +120,7 @@ enum WinState { Win, Loss, In_Prog };
 struct GameState
 {
     Entity* player;
-    Entity* platforms;
+    Map* map;
     Entity* enemies;
 
     WinState win_state = In_Prog;
@@ -129,7 +129,7 @@ struct GameState
 
 
 
-// â€“â€“â€“â€“â€“ HELPER FUNCTIONS â€“â€“â€“â€“â€“ //
+// ––––– HELPER FUNCTIONS ––––– //
 GLuint load_texture(const char* filepath) {
     int width, height, num_of_components;
     unsigned char* image = stbi_load(filepath, &width, &height, &num_of_components, STBI_rgb_alpha);
@@ -156,20 +156,28 @@ GLuint load_texture(const char* filepath) {
 
 void draw_text(ShaderProgram* program, GLuint font_texture_id, std::string text, float screen_size, float spacing, glm::vec3 position)
 {
+    // Scale the size of the fontbank in the UV-plane
+    // We will use this for spacing and positioning
     float width = 1.0f / FONTBANK_SIZE;
     float height = 1.0f / FONTBANK_SIZE;
 
+    // Instead of having a single pair of arrays, we'll have a series of pairs—one for each character
+    // Don't forget to include <vector>!
     std::vector<float> vertices;
     std::vector<float> texture_coordinates;
 
+    // For every character...
     for (int i = 0; i < text.size(); i++) {
+        // 1. Get their index in the spritesheet, as well as their offset (i.e. their position
+        //    relative to the whole sentence)
         int spritesheet_index = (int)text[i];  // ascii value of character
         float offset = (screen_size + spacing) * i;
-        
-        //find right letter in fontbank
+
+        // 2. Using the spritesheet index, we can calculate our U- and V-coordinates
         float u_coordinate = (float)(spritesheet_index % FONTBANK_SIZE) / FONTBANK_SIZE;
         float v_coordinate = (float)(spritesheet_index / FONTBANK_SIZE) / FONTBANK_SIZE;
 
+        // 3. Inset the current pair in both vectors
         vertices.insert(vertices.end(), {
             offset + (-0.5f * screen_size), 0.5f * screen_size,
             offset + (-0.5f * screen_size), -0.5f * screen_size,
@@ -188,7 +196,8 @@ void draw_text(ShaderProgram* program, GLuint font_texture_id, std::string text,
             u_coordinate, v_coordinate + height,
             });
     }
-    //rendering 
+
+    // 4. And render all of them using the pairs
     glm::mat4 model_matrix = glm::mat4(1.0f);
     model_matrix = glm::translate(model_matrix, position);
 
@@ -208,7 +217,7 @@ void draw_text(ShaderProgram* program, GLuint font_texture_id, std::string text,
 }
 
 void update_win_state() {
-    if (g_state.player->get_defeated()) {
+    if (g_state.player->get_defeated() || g_state.player->get_position().y < -3.5) {
         g_state.win_state = Loss;
     }
     else {
@@ -221,7 +230,7 @@ void update_win_state() {
     }
 }
 
-// â€“â€“â€“â€“â€“ BASE FUNCTIONS â€“â€“â€“â€“â€“ //
+// ––––– BASE FUNCTIONS ––––– //
 void initialize() {
 
     SDL_Init(SDL_INIT_VIDEO);
@@ -289,33 +298,9 @@ void initialize() {
     g_state.enemies[2].set_has_anim(false);
 
 
-    // --- PLATFORMS --- //
-    g_state.platforms = new Entity[NUM_OF_PLATFORMS];
-    for (int i = 0; i < NUM_OF_PLATFORMS-3; i++)
-    {
-        g_state.platforms[i].set_texid(load_texture(PLATFORM));
-        g_state.platforms[i].set_width(0.5f);
-        g_state.platforms[i].set_height(0.5f);
-        g_state.platforms[i].set_model_matrix(glm::mat4(1.0f));
-        g_state.platforms[i].set_position(glm::vec3(i - 4.5f, -2.0f, 0.0f));
-        g_state.platforms[i].set_type(Platform);
-        g_state.platforms[i].set_has_anim(false);
-    }
-    for (int i = 0; i < 3; i++)
-    {
-        g_state.platforms[NUM_OF_PLATFORMS - 1 - i].set_texid(load_texture(PLATFORM));
-        g_state.platforms[NUM_OF_PLATFORMS - 1 - i].set_width(0.5f);
-        g_state.platforms[NUM_OF_PLATFORMS - 1 - i].set_height(0.5f);
-        g_state.platforms[NUM_OF_PLATFORMS - 1 - i].set_model_matrix(glm::mat4(1.0f));
-        g_state.platforms[NUM_OF_PLATFORMS - 1 - i].set_position(glm::vec3(i - 4.0f, 0.0f, 0.0f));
-        g_state.platforms[NUM_OF_PLATFORMS - 1 - i].set_type(Platform);
-        g_state.platforms[NUM_OF_PLATFORMS - 1 - i].set_has_anim(false);
-    }
-
-
     // --- MAP --- //
-    /*GLuint map_texture_id = load_texture(MAP);
-    g_state.map = new Map(14.0f, 5.0f, LEVEL_1_DATA, map_texture_id, 1.0f, 4, 1);*/
+    GLuint map_texture_id = load_texture(MAP);
+    g_state.map = new Map(14.0f, 5.0f, LEVEL_1_DATA, map_texture_id, 1.0f, 2, 1);
 
 
     glEnable(GL_BLEND);
@@ -343,9 +328,8 @@ void update(){
     delta_time += g_time_accumulator;    
 
     // --- PLATFORM --- //
-    for (int i = 0; i < NUM_OF_PLATFORMS; i++) {
-        g_state.platforms[i].update(delta_time, g_state.player, g_state.enemies, g_state.platforms);
-    }
+   // g_state.map.update(delta_time, g_state.player, g_state.enemies, g_state.map);
+
 
     // --- FIXED TIMESTAMP --- //
     if (delta_time < FIXED_TIMESTEP)
@@ -357,16 +341,20 @@ void update(){
     while (delta_time >= FIXED_TIMESTEP)
     {
         if (g_state.win_state == In_Prog) {
-            g_state.player->update(FIXED_TIMESTEP, g_state.player, g_state.enemies, g_state.platforms);
+            g_state.player->update(FIXED_TIMESTEP, g_state.player, g_state.enemies, g_state.map);
             for (int i = 0; i < NUM_OF_ENEMIES; i++) {
                 if (!g_state.enemies[i].get_defeated()) {
-                    g_state.enemies[i].update(FIXED_TIMESTEP, g_state.player, g_state.enemies, g_state.platforms);
+                    g_state.enemies[i].update(FIXED_TIMESTEP, g_state.player, g_state.enemies, g_state.map);
                 }
             }
         }
         delta_time -= FIXED_TIMESTEP;
     }
     g_time_accumulator = delta_time;
+    g_view_matrix = glm::mat4(1.0f);
+    if (g_state.win_state == In_Prog) {
+        g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-g_state.player->get_position().x, 0.0f, 0.0f));
+    }
 }
 
 void render() {
@@ -384,10 +372,7 @@ void render() {
         draw_text(&g_program, load_texture(FONT), "You Win", 1.0f, -0.6f, glm::vec3(-1.7, 0.0f, 0.0f));
     }
     else {
-        //g_state.map->render(&g_program);
-        for (int i = 0; i < NUM_OF_PLATFORMS; i++) {
-            g_state.platforms[i].render(&g_program, 0.5f);
-        }
+        g_state.map->render(&g_program);
         g_state.player->render(&g_program, SCALES[0]);
         for (int i = 0; i < NUM_OF_ENEMIES; i++) {
             if (!g_state.enemies[i].get_defeated()) {
@@ -400,7 +385,7 @@ void render() {
 }
 
 void shutdown() {
-    //delete g_state.map;
+    delete g_state.map;
     SDL_Quit();
 }
 
